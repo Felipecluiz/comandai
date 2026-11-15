@@ -10,6 +10,8 @@ Um Durable Object `OrdersHub` por restaurante (`idFromName(restaurantId)`) mant�
 
 Usamos a **Hibernation API** (`state.acceptWebSocket`): o DO dorme enquanto não há mensagens e não cobra duração ociosa.
 
+O Durable Object é declarado como *SQLite-backed* (`new_sqlite_classes`), requisito para usar Durable Objects no plano gratuito. O `OrdersHub` não persiste nada; o tipo de storage não muda o comportamento.
+
 ## Consequências
 - ✅ Latência baixa e isolamento natural por tenant (um DO por restaurante).
 - ✅ Custo próximo de zero para restaurantes pequenos.
