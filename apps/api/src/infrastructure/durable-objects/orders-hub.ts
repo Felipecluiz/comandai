@@ -6,7 +6,7 @@ import type { OrderEvent, OrderNotifier } from "../../application";
  * usando a Hibernation API: o objeto dorme entre mensagens e não cobra duração ociosa.
  */
 export class OrdersHub extends DurableObject {
-  async fetch(request: Request): Promise<Response> {
+  override async fetch(request: Request): Promise<Response> {
     if (request.headers.get("Upgrade") !== "websocket") {
       return new Response("Expected WebSocket", { status: 426 });
     }
@@ -28,11 +28,11 @@ export class OrdersHub extends DurableObject {
     return sockets.length;
   }
 
-  async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer): Promise<void> {
+  override async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer): Promise<void> {
     if (message === "ping") socket.send("pong"); // heartbeat do painel
   }
 
-  async webSocketClose(socket: WebSocket, code: number, reason: string): Promise<void> {
+  override async webSocketClose(socket: WebSocket, code: number, reason: string): Promise<void> {
     socket.close(code, reason);
   }
 }

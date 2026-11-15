@@ -14,6 +14,12 @@ import { createApp } from "./interface/http/app";
 import { toOrderDto } from "./interface/http/presenters";
 import type { OrderEventDto } from "@comandai/contracts";
 
+/**
+ * O binding é declarado sem o tipo da classe (Bindings em interface/http) para a camada HTTP
+ * não depender da infraestrutura. Aqui, no composition root, devolvemos o tipo concreto para o RPC `broadcast()`.
+ */
+const ordersHubNamespace = (binding: DurableObjectNamespace) => binding as unknown as DurableObjectNamespace<OrdersHub>;
+
 const clock = new SystemClock();
 const ids = new CryptoIdGenerator();
 const hasher = new Pbkdf2PasswordHasher();
@@ -25,7 +31,7 @@ const app = createApp((env) => ({
   orders: new D1OrderRepository(env.DB),
   dashboard: new D1DashboardQueries(env.DB),
   images: new KvImageStorage(env.IMAGES),
-  notifier: new DurableObjectOrderNotifier(env.ORDERS_HUB as DurableObjectNamespace<OrdersHub>, (event) =>
+  notifier: new DurableObjectOrderNotifier(ordersHubNamespace(env.ORDERS_HUB), (event) =>
     JSON.stringify({ type: event.type, order: toOrderDto(event.order) } satisfies OrderEventDto),
   ),
   tokens: new JwtTokenService(env.JWT_SECRET, clock),
