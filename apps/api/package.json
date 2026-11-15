@@ -1,0 +1,28 @@
+{
+  "name": "@comandai/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate:local": "wrangler d1 migrations apply comandai-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply comandai-db --remote",
+    "db:seed:local": "wrangler d1 execute comandai-db --local --file=./seed/seed.sql"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.4.1",
+    "@comandai/contracts": "workspace:*",
+    "hono": "^4.6.10",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.5.26",
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "vitest": "2.1.5",
+    "wrangler": "^3.87.0"
+  }
+}

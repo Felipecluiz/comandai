@@ -1,0 +1,32 @@
+name = "comandai-api"
+main = "src/main.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Em produção, troque pelo domínio do Pages (ex.: https://comandai.pages.dev)
+ALLOWED_ORIGIN = "http://localhost:5173"
+# JWT_SECRET: `wrangler secret put JWT_SECRET` (produção) ou .dev.vars (local)
+
+[[d1_databases]]
+binding = "DB"
+database_name = "comandai-db"
+# `wrangler d1 create comandai-db` e cole o id aqui
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "IMAGES"
+# Fotos dos produtos (ADR-0006). O CI injeta o id real; o placeholder serve para dev local.
+id = "00000000000000000000000000000000"
+
+[[durable_objects.bindings]]
+name = "ORDERS_HUB"
+class_name = "OrdersHub"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["OrdersHub"]
+
+[observability]
+enabled = true

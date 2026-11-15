@@ -1,0 +1,2 @@
+# Copie para .dev.vars (não versionado). Gere com: openssl rand -base64 48
+JWT_SECRET=troque-por-um-segredo-com-pelo-menos-32-caracteres

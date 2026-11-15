@@ -1,0 +1,25 @@
+{
+  "name": "comandai",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "setup:deploy": "node scripts/setup-deploy.mjs",
+    "dev": "pnpm --parallel --filter @comandai/api --filter @comandai/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "db:migrate:local": "pnpm --filter @comandai/api db:migrate:local",
+    "db:seed:local": "pnpm --filter @comandai/api db:seed:local",
+    "deploy:api": "pnpm --filter @comandai/api run deploy",
+    "deploy:web": "pnpm --filter @comandai/web run deploy"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "eslint": "^9.14.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.13.0"
+  }
+}
