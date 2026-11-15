@@ -83,9 +83,6 @@ export class CategoryNotEmptyError extends DomainError {
 
 export class InvalidImageError extends DomainError {
   readonly code = "INVALID_IMAGE";
-  constructor(reason: string) {
-    super(reason);
-  }
 }
 
 export class RestaurantClosedError extends DomainError {

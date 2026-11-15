@@ -8,17 +8,11 @@ export class Phone {
   private constructor(readonly digits: string) {}
 
   static create(raw: string, field = "phone", { mobileOnly = false } = {}): Phone {
-    let digits = raw.replace(/\D/g, "");
-    if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) digits = digits.slice(2);
-
-    const isMobile = digits.length === 11 && digits[2] === "9";
-    const isLandline = digits.length === 10;
-    const validDdd = /^[1-9][1-9]/.test(digits);
-
-    if (!validDdd || !(isMobile || (isLandline && !mobileOnly))) {
+    const local = withoutCountryCode(raw.replace(/\D/g, ""));
+    if (!isValidBrazilianNumber(local, mobileOnly)) {
       throw new ValidationError(field, mobileOnly ? "Informe um celular com DDD" : "Telefone inválido");
     }
-    return new Phone(`55${digits}`);
+    return new Phone(`55${local}`);
   }
 
   static restore(digits: string): Phone {
@@ -33,4 +27,18 @@ export class Phone {
     const split = number.length - 4;
     return `(${ddd}) ${number.slice(0, split)}-${number.slice(split)}`;
   }
+}
+
+/** "5511987654321" → "11987654321" (o +55 é opcional na entrada). */
+function withoutCountryCode(digits: string): string {
+  const hasCountryCode = digits.startsWith("55") && (digits.length === 12 || digits.length === 13);
+  return hasCountryCode ? digits.slice(2) : digits;
+}
+
+/** DDD válido + celular (11 dígitos começando em 9) ou fixo (10 dígitos), se permitido. */
+function isValidBrazilianNumber(local: string, mobileOnly: boolean): boolean {
+  if (!/^[1-9][1-9]/.test(local)) return false;
+  const isMobile = local.length === 11 && local[2] === "9";
+  const isLandline = local.length === 10;
+  return isMobile || (isLandline && !mobileOnly);
 }

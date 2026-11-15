@@ -1,6 +1,7 @@
 {
   "name": "comandai",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.12.0",
   "scripts": {
     "setup:deploy": "node scripts/setup-deploy.mjs",

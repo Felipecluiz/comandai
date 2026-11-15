@@ -22,7 +22,16 @@ interface RequestOptions {
   auth?: boolean;
 }
 
-async function request<T>(method: string, path: string, { body, query, auth = false }: RequestOptions = {}): Promise<T> {
+function buildUrl(path: string, query?: Query): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value !== undefined) params.set(key, String(value));
+  }
+  const qs = params.toString();
+  return `${API_URL}/api${path}${qs ? `?${qs}` : ""}`;
+}
+
+function buildInit(method: string, { body, auth = false }: RequestOptions): RequestInit {
   const headers = new Headers();
   const isForm = body instanceof FormData;
   if (body !== undefined && !isForm) headers.set("content-type", "application/json");
@@ -30,27 +39,26 @@ async function request<T>(method: string, path: string, { body, query, auth = fa
   const session = sessionStore.get();
   if (auth && session) headers.set("authorization", `Bearer ${session.token}`);
 
-  const qs = query
-    ? "?" + new URLSearchParams(Object.entries(query).filter(([, v]) => v !== undefined) as [string, string][])
-    : "";
+  const payload = isForm ? body : body === undefined ? undefined : JSON.stringify(body);
+  return { method, headers, body: payload };
+}
 
-  const response = await fetch(`${API_URL}/api${path}${qs}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
-  });
-
-  if (response.status === 401 && auth) sessionStore.set(null); // sessão expirou → volta pro login
-  if (response.status === 204) return undefined as T;
-  if (response.ok) return (await response.json()) as T;
-
+async function toApiError(response: Response): Promise<ApiError> {
   const payload = (await response.json().catch(() => null)) as ApiErrorBody | null;
-  throw new ApiError(
+  return new ApiError(
     response.status,
     payload?.error.code ?? "INTERNAL_ERROR",
     payload?.error.message ?? "Falha de comunicação. Tente novamente.",
     payload?.error.details,
   );
+}
+
+async function request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
+  const response = await fetch(buildUrl(path, options.query), buildInit(method, options));
+
+  if (response.status === 401 && options.auth) sessionStore.set(null); // sessão expirou → volta pro login
+  if (!response.ok) throw await toApiError(response);
+  return (response.status === 204 ? undefined : await response.json()) as T;
 }
 
 /** Cliente público (cardápio, pedido) */
@@ -65,7 +73,7 @@ export const adminApi = {
   post: <T>(path: string, body: unknown) => request<T>("POST", `/admin${path}`, { body, auth: true }),
   put: <T>(path: string, body: unknown) => request<T>("PUT", `/admin${path}`, { body, auth: true }),
   patch: <T>(path: string, body: unknown) => request<T>("PATCH", `/admin${path}`, { body, auth: true }),
-  delete: (path: string) => request<void>("DELETE", `/admin${path}`, { auth: true }),
+  delete: (path: string) => request<undefined>("DELETE", `/admin${path}`, { auth: true }),
 };
 
 export const authApi = {

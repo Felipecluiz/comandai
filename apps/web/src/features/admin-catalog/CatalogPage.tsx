@@ -38,10 +38,11 @@ export function CatalogPage() {
   };
 
   const move = (index: number, delta: number) => {
-    const ids = categories.map((c) => c.id);
     const target = index + delta;
-    if (target < 0 || target >= ids.length) return;
-    [ids[index], ids[target]] = [ids[target]!, ids[index]!];
+    if (target < 0 || target >= categories.length) return;
+    const ids = categories.map((c) => c.id);
+    const [moved] = ids.splice(index, 1);
+    if (moved) ids.splice(target, 0, moved);
     reorder.mutate(ids);
   };
 

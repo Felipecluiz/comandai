@@ -55,9 +55,10 @@ export function useCart(slug: string) {
     syncWithMenu(products: ProductDto[]) {
       const byId = new Map(products.map((p) => [p.id, p]));
       store.set((prev) => {
-        const next = prev
-          .filter((l) => byId.has(l.productId))
-          .map((l) => ({ ...l, name: byId.get(l.productId)!.name, unitPriceCents: byId.get(l.productId)!.priceCents }));
+        const next = prev.flatMap((line) => {
+          const product = byId.get(line.productId);
+          return product ? [{ ...line, name: product.name, unitPriceCents: product.priceCents }] : [];
+        });
         return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
       });
     },

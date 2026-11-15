@@ -16,7 +16,6 @@ export function MenuPage() {
 
   useEffect(() => {
     if (menu) cart.syncWithMenu(menu.sections.flatMap((s) => s.products));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menu]);
 
   if (isLoading) return <Loading label="Carregando cardápio…" />;

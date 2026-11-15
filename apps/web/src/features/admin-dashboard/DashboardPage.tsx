@@ -73,7 +73,7 @@ export function DashboardPage() {
               ) : (
                 <ol className="ranking">
                   {data.topProducts.map((p, i) => {
-                    const max = data.topProducts[0]!.quantity;
+                    const max = Math.max(...data.topProducts.map((t) => t.quantity));
                     return (
                       <li key={p.productId}>
                         <span className="ranking__pos">{i + 1}</span>

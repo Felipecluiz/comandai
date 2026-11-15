@@ -151,19 +151,28 @@ function parseFulfillment(input: PlaceOrderRequest["fulfillment"], restaurant: R
   if (!restaurant.accepts(type)) {
     throw new ValidationError("fulfillment.type", type === "delivery" ? "Não fazemos entregas" : "Não aceitamos retirada");
   }
-  if (type === "pickup") return { type };
+  return type === "pickup" ? { type } : { type, address: parseAddress(input.address) };
+}
 
-  const a = input.address;
-  if (!a) throw new ValidationError("fulfillment.address", "Informe o endereço de entrega"); // BR-003.3
+const ADDRESS_RULES: Record<keyof Address, { min: number; max: number }> = {
+  street: { min: 3, max: 120 },
+  number: { min: 1, max: 10 },
+  district: { min: 2, max: 60 },
+  complement: { min: 0, max: 60 },
+  reference: { min: 0, max: 100 },
+};
+
+/** BR-003.3 — entrega exige endereço completo. */
+function parseAddress(input: Partial<Address> | undefined): Address {
+  if (!input) throw new ValidationError("fulfillment.address", "Informe o endereço de entrega");
+  const field = (key: keyof Address) =>
+    boundedText(input[key] ?? "", { field: `address.${key}`, ...ADDRESS_RULES[key] });
   return {
-    type,
-    address: {
-      street: boundedText(a.street ?? "", { field: "address.street", min: 3, max: 120 }),
-      number: boundedText(a.number ?? "", { field: "address.number", min: 1, max: 10 }),
-      district: boundedText(a.district ?? "", { field: "address.district", min: 2, max: 60 }),
-      complement: boundedText(a.complement ?? "", { field: "address.complement", min: 0, max: 60 }),
-      reference: boundedText(a.reference ?? "", { field: "address.reference", min: 0, max: 100 }),
-    },
+    street: field("street"),
+    number: field("number"),
+    district: field("district"),
+    complement: field("complement"),
+    reference: field("reference"),
   };
 }
 

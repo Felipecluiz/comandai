@@ -66,10 +66,10 @@ export class CatalogUseCases {
     if (!sameSet || orderedIds.some((id) => !byId.has(id))) {
       throw new ValidationError("ids", "Envie todas as categorias, sem repetir");
     }
-    const reordered = orderedIds.map((id, position) => {
-      const category = byId.get(id)!;
-      category.moveTo(position);
-      return category;
+    const reordered = orderedIds.flatMap((id, position) => {
+      const category = byId.get(id);
+      category?.moveTo(position);
+      return category ? [category] : []; // sempre existe: validado acima
     });
     await this.catalog.saveCategories(reordered);
     return reordered.map((c) => c.toSnapshot());

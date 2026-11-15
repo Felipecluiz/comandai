@@ -6,8 +6,13 @@ import { centsToInput, formatPhoneDigits, maskPhone, parseBRLToCents } from "../
 import { ErrorMessage, Field, fieldError, hasFieldErrors } from "../../shared/ui/feedback";
 import { updateSessionRestaurant, useSession } from "../auth/session";
 
+/** O AdminLayout já garante a sessão; a checagem aqui só deixa o tipo explícito. */
 export function SettingsPage() {
-  const restaurant = useSession()!.restaurant;
+  const session = useSession();
+  return session ? <SettingsForm restaurant={session.restaurant} /> : null;
+}
+
+function SettingsForm({ restaurant }: { restaurant: RestaurantDto }) {
   const [form, setForm] = useState({
     name: restaurant.name,
     whatsapp: formatPhoneDigits(restaurant.whatsapp),
