@@ -26,7 +26,7 @@ class_name = "OrdersHub"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["OrdersHub"]
+new_sqlite_classes = ["OrdersHub"]
 
 [observability]
 enabled = true
