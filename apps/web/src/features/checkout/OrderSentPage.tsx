@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { formatCents } from "../../shared/lib/format";
 import { useStore } from "../../shared/lib/store";
+import { useCart } from "../cart/cart";
 import { lastOrderStore } from "./last-order";
 
 /**
@@ -12,6 +13,13 @@ export function OrderSentPage() {
   const { slug = "", number } = useParams();
   const last = useStore(lastOrderStore);
   const matches = last && last.slug === slug && String(last.order.number) === number;
+  const { clear: clearCart } = useCart(slug);
+
+  // Esvazia a sacola só aqui: fazer isso no checkout disparava o redirect de "sacola vazia"
+  // antes de a navegação para esta tela acontecer, e o WhatsApp nunca abria.
+  useEffect(() => {
+    if (matches) clearCart();
+  }, [matches]);
 
   useEffect(() => {
     if (!matches) return;

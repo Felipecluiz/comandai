@@ -39,7 +39,9 @@ export function CheckoutPage() {
   const [changeFor, setChangeFor] = useState("");
 
   if (isLoading || !menu) return <Loading />;
-  if (cart.count === 0) return <Navigate to={`/r/${slug}`} replace />;
+  // Depois do envio, quem esvazia a sacola é a tela de sucesso; aqui não redirecionamos no meio da navegação.
+  const justOrdered = placeOrder.isPending || placeOrder.isSuccess;
+  if (cart.count === 0 && !justOrdered) return <Navigate to={`/r/${slug}`} replace />;
 
   const { restaurant } = menu;
   const type = restaurant.acceptsDelivery ? fulfillment : "pickup";
@@ -76,7 +78,6 @@ export function CheckoutPage() {
       onSuccess: (result) => {
         customerStore.set(customer);
         lastOrderStore.set({ slug, ...result });
-        cart.clear();
         navigate(`/r/${slug}/pedido/${result.order.number}`, { replace: true });
       },
     });
