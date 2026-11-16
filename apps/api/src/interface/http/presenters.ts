@@ -9,6 +9,7 @@ import type {
 import type { AdminCatalog, PublicMenu } from "../../application";
 import {
   allowedTransitions,
+  isExternalImage,
   type MenuCategorySnapshot,
   type OrderSnapshot,
   type ProductSnapshot,
@@ -40,7 +41,11 @@ export function toProductDto(p: ProductSnapshot, origin: string): ProductDto {
     name: p.name,
     description: p.description,
     priceCents: p.priceCents,
-    imageUrl: p.imageKey ? `${origin}/api/images/${p.imageKey}` : null,
+    imageUrl: p.imageKey
+      ? isExternalImage(p.imageKey)
+        ? p.imageKey
+        : `${origin}/api/images/${p.imageKey}`
+      : null,
     available: p.available,
   };
 }

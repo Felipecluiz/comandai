@@ -17,6 +17,7 @@ export function ProductSheet({ product, onClose, onAdd }: Props) {
   return (
     <Modal title={product.name} open onClose={onClose}>
       {product.imageUrl && <img className="sheet__image" src={product.imageUrl} alt="" />}
+      <p className="sheet__price">{formatCents(product.priceCents)}</p>
       {product.description && <p className="muted">{product.description}</p>}
 
       <label className="field">

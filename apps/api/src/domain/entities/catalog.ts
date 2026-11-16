@@ -109,3 +109,12 @@ export class Product {
     };
   }
 }
+
+/**
+ * A chave de imagem pode ser um objeto no KV ou uma URL https externa
+ * (usado pelos dados de demonstração, com fotos do Unsplash). URLs externas
+ * nunca são apagadas do storage.
+ */
+export function isExternalImage(key: string): boolean {
+  return key.startsWith("https://");
+}

@@ -2,6 +2,7 @@ import {
   CategoryNameTakenError,
   CategoryNotEmptyError,
   InvalidImageError,
+  isExternalImage,
   MenuCategory,
   NotFoundError,
   Product,
@@ -102,7 +103,7 @@ export class CatalogUseCases {
     const product = await this.findProductOrFail(restaurantId, id);
     await this.catalog.deleteProduct(restaurantId, id);
     const { imageKey } = product.toSnapshot();
-    if (imageKey) await this.images.delete(imageKey);
+    if (imageKey && !isExternalImage(imageKey)) await this.images.delete(imageKey);
   }
 
   /** BR-002.5 / AC-002.5 */
@@ -123,7 +124,7 @@ export class CatalogUseCases {
 
     const previousKey = product.changeImage(key);
     await this.catalog.saveProduct(product);
-    if (previousKey) await this.images.delete(previousKey);
+    if (previousKey && !isExternalImage(previousKey)) await this.images.delete(previousKey);
     return product.toSnapshot();
   }
 

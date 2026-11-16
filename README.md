@@ -75,13 +75,13 @@ flowchart LR
   end
   M -- POST pedido --> W
   P -- REST + JWT --> W
-  P <-. WebSocket .-> DO
+  P <-.->|WebSocket| DO
   subgraph Cloudflare
     W[Worker · Hono] --> D1[(D1)]
     W --> KV[(KV fotos)]
     W -- broadcast --> DO[Durable Object<br/>OrdersHub por restaurante]
   end
-  M -. wa.me .-> WA[WhatsApp do restaurante]
+  M -.->|"link wa.me"| WA[WhatsApp do restaurante]
 ```
 
 ```

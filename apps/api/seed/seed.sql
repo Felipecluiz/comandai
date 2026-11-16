@@ -15,19 +15,19 @@ INSERT INTO menu_categories (id, restaurant_id, name, name_normalized, position)
   ('cat-sobremesas', 'rest-demo-0001', 'Sobremesas', 'sobremesas', 3);
 
 INSERT INTO products (id, restaurant_id, category_id, name, description, price_cents, image_key, available) VALUES
-  ('prod-calabresa', 'rest-demo-0001', 'cat-pizzas', 'Calabresa', 'Molho de tomate, mussarela, calabresa fatiada e cebola roxa', 5490, NULL, 1),
-  ('prod-margherita', 'rest-demo-0001', 'cat-pizzas', 'Margherita', 'Mussarela de búfala, tomate e manjericão fresco', 5990, NULL, 1),
-  ('prod-portuguesa', 'rest-demo-0001', 'cat-pizzas', 'Portuguesa', 'Presunto, ovos, cebola, ervilha, azeitona e mussarela', 6290, NULL, 1),
-  ('prod-frango', 'rest-demo-0001', 'cat-pizzas', 'Frango com Catupiry', 'Frango desfiado temperado com Catupiry original', 5890, NULL, 1),
-  ('prod-quatro', 'rest-demo-0001', 'cat-pizzas', 'Quatro Queijos', 'Mussarela, provolone, parmesão e gorgonzola', 6490, NULL, 1),
-  ('prod-esf-carne', 'rest-demo-0001', 'cat-esfihas', 'Esfiha de Carne', 'Carne moída temperada com limão e hortelã', 690, NULL, 1),
-  ('prod-esf-queijo', 'rest-demo-0001', 'cat-esfihas', 'Esfiha de Queijo', 'Mussarela e orégano', 650, NULL, 1),
+  ('prod-calabresa', 'rest-demo-0001', 'cat-pizzas', 'Calabresa', 'Molho de tomate, mussarela, calabresa fatiada e cebola roxa', 5490, 'https://images.unsplash.com/photo-1542282811-943ef1a977c3?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-margherita', 'rest-demo-0001', 'cat-pizzas', 'Margherita', 'Mussarela de búfala, tomate e manjericão fresco', 5990, 'https://images.unsplash.com/photo-1595026506669-1e937fc6b9e6?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-portuguesa', 'rest-demo-0001', 'cat-pizzas', 'Portuguesa', 'Presunto, ovos, cebola, ervilha, azeitona e mussarela', 6290, 'https://images.unsplash.com/photo-1594179047502-07fb8a5451f6?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-frango', 'rest-demo-0001', 'cat-pizzas', 'Frango com Catupiry', 'Frango desfiado temperado com Catupiry original', 5890, 'https://images.unsplash.com/photo-1572455021453-7d0b208ae250?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-quatro', 'rest-demo-0001', 'cat-pizzas', 'Quatro Queijos', 'Mussarela, provolone, parmesão e gorgonzola', 6490, 'https://images.unsplash.com/photo-1597715469889-dd75fe4a1765?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-esf-carne', 'rest-demo-0001', 'cat-esfihas', 'Esfiha de Carne', 'Carne moída temperada com limão e hortelã', 690, 'https://images.unsplash.com/photo-1753125024862-d08682e24d2c?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-esf-queijo', 'rest-demo-0001', 'cat-esfihas', 'Esfiha de Queijo', 'Mussarela e orégano', 650, 'https://images.unsplash.com/photo-1716591111290-215dfc6876d2?auto=format&fit=crop&w=600&q=70', 1),
   ('prod-esf-zaatar', 'rest-demo-0001', 'cat-esfihas', 'Esfiha de Zaatar', 'Zaatar com azeite — esgotou hoje', 590, NULL, 0),
   ('prod-coca', 'rest-demo-0001', 'cat-bebidas', 'Coca-Cola 2L', 'Bem gelada', 1490, NULL, 1),
   ('prod-guarana', 'rest-demo-0001', 'cat-bebidas', 'Guaraná Antarctica 2L', '', 1290, NULL, 1),
-  ('prod-suco', 'rest-demo-0001', 'cat-bebidas', 'Suco de Laranja 500ml', 'Natural, feito na hora', 990, NULL, 1),
-  ('prod-petit', 'rest-demo-0001', 'cat-sobremesas', 'Petit Gâteau', 'Com sorvete de creme', 2290, NULL, 1),
-  ('prod-brigadeiro', 'rest-demo-0001', 'cat-sobremesas', 'Pizza de Brigadeiro (broto)', 'Chocolate e granulado', 3490, NULL, 1);
+  ('prod-suco', 'rest-demo-0001', 'cat-bebidas', 'Suco de Laranja 500ml', 'Natural, feito na hora', 990, 'https://images.unsplash.com/photo-1650316710473-8b2ecdcd2b10?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-petit', 'rest-demo-0001', 'cat-sobremesas', 'Petit Gâteau', 'Com sorvete de creme', 2290, 'https://images.unsplash.com/photo-1768260731727-275f15ed2556?auto=format&fit=crop&w=600&q=70', 1),
+  ('prod-brigadeiro', 'rest-demo-0001', 'cat-sobremesas', 'Pizza de Brigadeiro (broto)', 'Chocolate e granulado', 3490, 'https://images.unsplash.com/flagged/photo-1557234985-425e10c9d7f1?auto=format&fit=crop&w=600&q=70', 1);
 
 INSERT INTO orders (id, restaurant_id, number, status, customer_json, fulfillment_type, fulfillment_json, payment_json, subtotal_cents, delivery_fee_cents, total_cents, cancel_reason, status_history_json, created_at, local_date) VALUES
   ('order-demo-0001', 'rest-demo-0001', 1, 'completed', '{"name": "Gabi", "phone": "5511997226012"}', 'delivery', '{"type": "delivery", "address": {"street": "Al. Santos", "number": "1126", "district": "Vila Madalena", "complement": "", "reference": ""}}', '{"method": "pix"}', 11670, 700, 12370, NULL, json_array(json_object('status', 'pending', 'at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes')), json_object('status', 'accepted', 'at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes')), json_object('status', 'preparing', 'at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes')), json_object('status', 'ready', 'at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes')), json_object('status', 'out_for_delivery', 'at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes')), json_object('status', 'completed', 'at', strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes'))), strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes'), date(strftime('%Y-%m-%dT%H:%M:%fZ', 'now', 'start of day', '-29 days', '+21 hours', '+47 minutes'), '-3 hours')),
