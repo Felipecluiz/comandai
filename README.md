@@ -191,3 +191,7 @@ Erros: `{ "error": { "code": "PRODUCT_UNAVAILABLE", "message": "...", "details":
 - [ ] Cupons de desconto
 - [ ] Acompanhamento do pedido pelo cliente (mesmo Durable Object, canal público)
 - [ ] WhatsApp Cloud API como `OrderNotifier` alternativo
+
+## 📷 Créditos
+
+As fotos da página inicial vêm do [Unsplash](https://unsplash.com) e são usadas sob a [Unsplash License](https://unsplash.com/license). A "Padaria Trigal" e os produtos mostrados são fictícios.
