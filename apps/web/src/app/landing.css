@@ -183,7 +183,7 @@
 .lp-chip__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tomato); box-shadow: 0 0 0 4px rgba(224, 64, 43, 0.18); }
 
 /* ---------- Frase que acende com a rolagem ---------- */
-.lp .lp-statement { position: relative; display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 2rem; align-items: center; padding-block: clamp(3rem, 8vw, 6.5rem); }
+.lp .lp-statement { position: relative; overflow: clip; display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 2rem; align-items: center; padding-block: clamp(3rem, 8vw, 6.5rem); }
 .lp-statement p {
   font-family: var(--display); font-weight: 650; font-variation-settings: "opsz" 96;
   font-size: clamp(1.9rem, 4.4vw, 3.4rem); line-height: 1.12; letter-spacing: -0.03em; color: var(--ink); max-width: 22ch;
@@ -201,13 +201,12 @@
 @keyframes lp-lit { to { color: var(--ink); } }
 
 /* ---------- Como funciona: painel fixo + linha do tempo ---------- */
-.lp .lp-how { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); padding-block: clamp(3rem, 7vw, 5rem); }
+.lp .lp-how { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: start; padding-block: clamp(3rem, 7vw, 5rem); }
 .lp-how__stage { position: sticky; top: 104px; align-self: start; }
-.lp-stage__progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
-.lp-stage__progress span { height: 4px; border-radius: 4px; background: var(--line); transition: background-color 0.3s; }
-.lp-stage__progress span.is-on { background: var(--tomato); }
-.lp-stage__visual { position: relative; aspect-ratio: 5 / 4; border-radius: 24px; background: var(--ink); overflow: hidden;
-  background-image: repeating-linear-gradient(transparent 0 31px, rgba(255, 255, 255, 0.06) 31px 32px); }
+.lp-stage__visual {
+  position: relative; aspect-ratio: 5 / 4; border-radius: 28px; overflow: hidden;
+  background: radial-gradient(120% 90% at 20% 0%, #2c3d93 0%, var(--ink) 55%, var(--ink-deep) 100%);
+}
 .lp-stage__frame { position: absolute; inset: 0; display: grid; place-items: center; padding: 1.5rem; opacity: 0; transform: translateY(12px); transition: opacity 0.35s, transform 0.35s; }
 .lp-stage__frame.is-on { opacity: 1; transform: none; }
 
@@ -242,7 +241,7 @@
 .lp-how__text h2 { margin-bottom: 2.5rem; }
 .lp-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
 .lp-timeline::before { content: ""; position: absolute; left: 19px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
-.lp-timeline li { position: relative; padding: 0 0 clamp(6rem, 22vh, 11rem) 64px; }
+.lp-timeline li { position: relative; padding: 0 0 clamp(3.5rem, 12vh, 6rem) 64px; opacity: 0.45; transition: opacity 0.3s; }
 .lp-timeline li:last-child { padding-bottom: 0; min-height: 0; }
 .lp-timeline__dot {
   position: absolute; left: 0; top: -4px; width: 40px; height: 40px; border-radius: 50%;
@@ -251,6 +250,7 @@
 }
 .lp-timeline h3 { font-size: 1.35rem; transition: color 0.3s; color: var(--soft); }
 .lp-timeline p { margin-top: 0.5rem; color: var(--soft); max-width: 40ch; }
+.lp-timeline li.is-active { opacity: 1; }
 .lp-timeline li.is-active .lp-timeline__dot { background: var(--tomato); border-color: var(--tomato); color: #fff; }
 .lp-timeline li.is-active h3 { color: var(--ink); }
 
@@ -372,9 +372,9 @@
   .lp-ticket { animation: none; }
   .lp-btn,
   .lp-stage__frame,
+  .lp-timeline li,
   .lp-timeline__dot,
-  .lp-timeline h3,
-  .lp-stage__progress span { transition: none; }
+  .lp-timeline h3 { transition: none; }
 }
 
 /* ---------- Parallax (JS define --p em px; desligado com "reduzir movimento") ---------- */

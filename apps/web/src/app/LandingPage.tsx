@@ -79,7 +79,10 @@ function useParallax(root: RefObject<HTMLElement | null>) {
         const rect = anchor.getBoundingClientRect();
         if (rect.bottom < -200 || rect.top > window.innerHeight + 200) continue;
         const offset = rect.top + rect.height / 2 - mid;
-        item.style.setProperty("--p", (-offset * speed).toFixed(1));
+        // data-parallax-max limita o deslocamento (px), para nada invadir a seção vizinha.
+        const max = Number(item.dataset.parallaxMax ?? Infinity);
+        const value = Math.max(-max, Math.min(max, -offset * speed));
+        item.style.setProperty("--p", value.toFixed(1));
       }
     };
     const onScroll = () => {
@@ -244,10 +247,10 @@ function Statement() {
         ))}
       </p>
       <div className="lp-float" aria-hidden="true">
-        <img className="lp-float__a" src={photo(PHOTOS.croissant, 360)} alt="" loading="lazy" data-parallax="0.35" />
-        <img className="lp-float__b" src={photo(PHOTOS.coffee, 300)} alt="" loading="lazy" data-parallax="-0.2" />
-        <img className="lp-float__c" src={photo(PHOTOS.donut, 260)} alt="" loading="lazy" data-parallax="0.45" />
-        <span className="lp-float__tag" data-parallax="0.12">
+        <img className="lp-float__a" src={photo(PHOTOS.croissant, 360)} alt="" loading="lazy" data-parallax="0.12" data-parallax-max="40" />
+        <img className="lp-float__b" src={photo(PHOTOS.coffee, 300)} alt="" loading="lazy" data-parallax="-0.08" data-parallax-max="30" />
+        <img className="lp-float__c" src={photo(PHOTOS.donut, 260)} alt="" loading="lazy" data-parallax="0.16" data-parallax-max="45" />
+        <span className="lp-float__tag" data-parallax="0.06" data-parallax-max="20">
           Pedido #129 · R$ 16,50
         </span>
       </div>
@@ -343,11 +346,6 @@ function HowItWorks() {
   return (
     <section className="lp-how" id="como-funciona" aria-labelledby="lp-how-title">
       <div className="lp-how__stage">
-        <div className="lp-stage__progress" aria-hidden="true">
-          {STEPS.map((s, i) => (
-            <span key={s.title} className={i <= active ? "is-on" : undefined} />
-          ))}
-        </div>
         <StepVisual step={active} />
       </div>
 
