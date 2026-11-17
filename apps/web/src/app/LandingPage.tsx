@@ -62,7 +62,7 @@ function useParallax(root: RefObject<HTMLElement | null>) {
     const el = root.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const items = Array.from(
-      el.querySelectorAll<HTMLElement>("[data-parallax], [data-parallax-bg], [data-parallax-x]"),
+      el.querySelectorAll<HTMLElement>("[data-parallax], [data-parallax-bg]"),
     );
     if (items.length === 0) return;
     el.classList.add("is-parallax");
@@ -74,7 +74,7 @@ function useParallax(root: RefObject<HTMLElement | null>) {
       // Em telas pequenas o efeito fica mais contido, para nada sobrepor o texto.
       const scale = window.innerWidth < 640 ? 0.4 : window.innerWidth < 960 ? 0.7 : 1;
       for (const item of items) {
-        const speed = scale * Number(item.dataset.parallax ?? item.dataset.parallaxBg ?? item.dataset.parallaxX ?? 0);
+        const speed = scale * Number(item.dataset.parallax ?? item.dataset.parallaxBg ?? 0);
         const anchor = item.dataset.parallaxBg !== undefined ? item : (item.parentElement ?? item);
         const rect = anchor.getBoundingClientRect();
         if (rect.bottom < -200 || rect.top > window.innerHeight + 200) continue;
@@ -214,27 +214,6 @@ function Ticket() {
   );
 }
 
-const BUSINESSES = ["Padarias", "Pizzarias", "Hamburguerias", "Cafeterias", "Açaiterias", "Marmitarias", "Docerias", "Pastelarias", "Lanchonetes", "Confeitarias"];
-
-/** Faixas com tipos de negócio que deslizam em sentidos opostos conforme a rolagem. */
-function Marquee() {
-  const row = [...BUSINESSES, ...BUSINESSES];
-  return (
-    <section className="lp-marquee" aria-label={`Feito para ${BUSINESSES.join(", ")}`}>
-      <div className="lp-marquee__row" aria-hidden="true" data-parallax-x="0.45">
-        {row.map((b, i) => (
-          <span key={i}>{b}</span>
-        ))}
-      </div>
-      <div className="lp-marquee__row lp-marquee__row--outline" aria-hidden="true" data-parallax-x="-0.45">
-        {[...row].reverse().map((b, i) => (
-          <span key={i}>{b}</span>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 /** Frase que vai "acendendo" palavra por palavra conforme a rolagem (CSS scroll-driven, com fallback estático). */
 function Statement() {
   return (
@@ -259,10 +238,13 @@ function Statement() {
 }
 
 /** Ilustrações do painel fixo do "como funciona", uma por passo. */
-function StepVisual({ step }: { step: number }) {
+function StepVisual({ step, only, className = "" }: { step: number; only?: number; className?: string }) {
+  const show = (i: number) => only === undefined || only === i;
+  const on = (i: number) => (only !== undefined || step === i ? " is-on" : "");
   return (
-    <div className="lp-stage__visual" aria-hidden="true">
-      <div className={`lp-stage__frame${step === 0 ? " is-on" : ""}`}>
+    <div className={`lp-stage__visual ${className}`} aria-hidden="true">
+      {show(0) && (
+      <div className={`lp-stage__frame${on(0)}`}>
         <div className="lp-mini-menu">
           {PRODUCTS.slice(0, 3).map((p, i) => (
             <div key={p.name} className="lp-mini-menu__row">
@@ -282,7 +264,9 @@ function StepVisual({ step }: { step: number }) {
         </div>
       </div>
 
-      <div className={`lp-stage__frame${step === 1 ? " is-on" : ""}`}>
+      )}
+      {show(1) && (
+      <div className={`lp-stage__frame${on(1)}`}>
         <div className="lp-chat">
           <div className="lp-chat__head">
             <span className="lp-chat__avatar">M</span>
@@ -306,7 +290,9 @@ function StepVisual({ step }: { step: number }) {
         </div>
       </div>
 
-      <div className={`lp-stage__frame${step === 2 ? " is-on" : ""}`}>
+      )}
+      {show(2) && (
+      <div className={`lp-stage__frame${on(2)}`}>
         <div className="lp-board">
           {BOARD.map((c) => (
             <div key={c.col} className="lp-board__col">
@@ -321,6 +307,7 @@ function StepVisual({ step }: { step: number }) {
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -331,14 +318,19 @@ function HowItWorks() {
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActive(Number((entry.target as HTMLElement).dataset.step));
-        }
-      },
-      { rootMargin: "-45% 0px -45% 0px" },
-    );
+    // Ativo = o último passo cujo topo já passou da metade da tela.
+    const pick = () => {
+      const line = window.innerHeight * 0.55;
+      let current = 0;
+      refs.current.forEach((el, i) => {
+        if (el && el.getBoundingClientRect().top < line) current = i;
+      });
+      setActive(current);
+    };
+    const observer = new IntersectionObserver(pick, {
+      threshold: [0, 0.25, 0.5, 0.75, 1],
+      rootMargin: "-20% 0px -20% 0px",
+    });
     refs.current.forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
   }, []);
@@ -366,6 +358,7 @@ function HowItWorks() {
               </span>
               <h3>{s.title}</h3>
               <p>{s.text}</p>
+              <StepVisual step={i} only={i} className="lp-step-inline" />
             </li>
           ))}
         </ol>
@@ -446,8 +439,6 @@ export function LandingPage() {
             </div>
           </div>
         </section>
-
-        <Marquee />
 
         <Statement />
 
