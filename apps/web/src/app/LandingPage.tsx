@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import "./landing.css";
 
@@ -52,10 +52,71 @@ const FAQ = [
   { q: "Funciona com o WhatsApp comum ou só com o Business?", a: "Com os dois. O pedido chega como uma mensagem normal no número que você cadastrou." },
 ];
 
+/**
+ * Parallax leve: cada elemento com data-parallax="velocidade" recebe --p (px) conforme a distância
+ * do seu bloco-pai até o centro da tela. Mede o pai (que não se move) para não haver "tremida".
+ * Fica desligado para quem pediu menos movimento no sistema.
+ */
+function useParallax(root: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = root.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const items = Array.from(el.querySelectorAll<HTMLElement>("[data-parallax], [data-parallax-bg]"));
+    if (items.length === 0) return;
+    el.classList.add("is-parallax");
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const mid = window.innerHeight / 2;
+      for (const item of items) {
+        const speed = Number(item.dataset.parallax ?? item.dataset.parallaxBg ?? 0);
+        const anchor = item.dataset.parallaxBg !== undefined ? item : (item.parentElement ?? item);
+        const rect = anchor.getBoundingClientRect();
+        if (rect.bottom < -200 || rect.top > window.innerHeight + 200) continue;
+        const offset = rect.top + rect.height / 2 - mid;
+        item.style.setProperty("--p", (-offset * speed).toFixed(1));
+      }
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      el.classList.remove("is-parallax");
+    };
+  }, [root]);
+}
+
 function PhoneMenu() {
   return (
-    <div className="lp-phone" aria-hidden="true">
+    <div className="lp-phone" aria-hidden="true" data-parallax="-0.06">
+      <span className="lp-phone__btn lp-phone__btn--action" />
+      <span className="lp-phone__btn lp-phone__btn--vol-up" />
+      <span className="lp-phone__btn lp-phone__btn--vol-down" />
+      <span className="lp-phone__btn lp-phone__btn--power" />
       <div className="lp-phone__screen">
+        <div className="lp-phone__status">
+          <span>9:41</span>
+          <span className="lp-phone__island" />
+          <svg viewBox="0 0 64 12" width="58" height="11">
+            <g fill="currentColor">
+              <rect x="0" y="8" width="3" height="4" rx="0.8" />
+              <rect x="4.5" y="6" width="3" height="6" rx="0.8" />
+              <rect x="9" y="3.5" width="3" height="8.5" rx="0.8" />
+              <rect x="13.5" y="1" width="3" height="11" rx="0.8" />
+              <path d="M29 3.2a9.6 9.6 0 0 1 6.7 2.7l1.3-1.3A11.4 11.4 0 0 0 29 1.4a11.4 11.4 0 0 0-8 3.2l1.3 1.3A9.6 9.6 0 0 1 29 3.2Zm0 3.6a6 6 0 0 1 4.2 1.7l1.3-1.3A7.8 7.8 0 0 0 29 5a7.8 7.8 0 0 0-5.5 2.2l1.3 1.3A6 6 0 0 1 29 6.8Zm0 3.6c.6 0 1.1.2 1.6.6L29 12.6 27.4 11c.5-.4 1-.6 1.6-.6Z" />
+              <rect x="42.5" y="1.5" width="18" height="9" rx="2.6" fill="none" stroke="currentColor" strokeOpacity="0.45" />
+              <rect x="44.3" y="3.3" width="12.5" height="5.4" rx="1.4" />
+              <path d="M62 4.5v3a1.6 1.6 0 0 0 0-3Z" fillOpacity="0.45" />
+            </g>
+          </svg>
+        </div>
         <div className="lp-phone__header">
           <img src={photo(PHOTOS.window, 600)} alt="" />
           <div>
@@ -80,6 +141,7 @@ function PhoneMenu() {
           <span>Enviar pedido</span>
           <span>R$ 27,00</span>
         </div>
+        <span className="lp-phone__home" />
       </div>
     </div>
   );
@@ -87,7 +149,7 @@ function PhoneMenu() {
 
 function Ticket() {
   return (
-    <div className="lp-ticket" aria-hidden="true">
+    <div className="lp-ticket" aria-hidden="true" data-parallax="0.14">
       <p className="lp-ticket__head">Pedido #128</p>
       <p>2× Croissant de manteiga</p>
       <p>1× Café com leite</p>
@@ -234,8 +296,11 @@ function HowItWorks() {
 }
 
 export function LandingPage() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useParallax(rootRef);
+
   return (
-    <div className="lp">
+    <div className="lp" ref={rootRef}>
       <a className="lp-skip" href="#conteudo">
         Pular para o conteúdo
       </a>
@@ -287,14 +352,14 @@ export function LandingPage() {
           <div className="lp-hero__stage">
             <Ticket />
             <PhoneMenu />
-            <div className="lp-chip lp-chip--order" aria-hidden="true">
+            <div className="lp-chip lp-chip--order" aria-hidden="true" data-parallax="0.22">
               <span className="lp-chip__dot" />
               <div>
                 <b>Novo pedido #128</b>
                 <small>Marina · agora há pouco</small>
               </div>
             </div>
-            <div className="lp-chip lp-chip--zap" aria-hidden="true">
+            <div className="lp-chip lp-chip--zap" aria-hidden="true" data-parallax="-0.16">
               <b>Enviado pelo WhatsApp</b>
               <small>R$ 27,00 · Pix</small>
             </div>
@@ -320,7 +385,7 @@ export function LandingPage() {
           </div>
           <ul className="lp-mosaic">
             <li className="lp-mosaic__feature">
-              <img src={photo(PHOTOS.window, 1100)} alt="Vitrine de padaria com pães expostos" loading="lazy" />
+              <img src={photo(PHOTOS.window, 1100)} alt="Vitrine de padaria com pães expostos" loading="lazy" data-parallax="0.12" />
               <div className="lp-mosaic__caption">
                 <b>Padaria Trigal</b>
                 <span>Aberto até 20h · entrega em 30 min</span>
@@ -410,7 +475,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="lp-cta">
+        <section className="lp-cta" data-parallax-bg="0.25">
           <h2>Sua loja no ar ainda hoje</h2>
           <p>Cadastre os produtos, coloque o link na bio e comece a receber pedidos.</p>
           <div className="lp-cta__actions">
