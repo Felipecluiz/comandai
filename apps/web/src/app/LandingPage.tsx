@@ -61,7 +61,9 @@ function useParallax(root: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = root.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const items = Array.from(el.querySelectorAll<HTMLElement>("[data-parallax], [data-parallax-bg]"));
+    const items = Array.from(
+      el.querySelectorAll<HTMLElement>("[data-parallax], [data-parallax-bg], [data-parallax-x]"),
+    );
     if (items.length === 0) return;
     el.classList.add("is-parallax");
 
@@ -69,8 +71,10 @@ function useParallax(root: RefObject<HTMLElement | null>) {
     const update = () => {
       frame = 0;
       const mid = window.innerHeight / 2;
+      // Em telas pequenas o efeito fica mais contido, para nada sobrepor o texto.
+      const scale = window.innerWidth < 640 ? 0.4 : window.innerWidth < 960 ? 0.7 : 1;
       for (const item of items) {
-        const speed = Number(item.dataset.parallax ?? item.dataset.parallaxBg ?? 0);
+        const speed = scale * Number(item.dataset.parallax ?? item.dataset.parallaxBg ?? item.dataset.parallaxX ?? 0);
         const anchor = item.dataset.parallaxBg !== undefined ? item : (item.parentElement ?? item);
         const rect = anchor.getBoundingClientRect();
         if (rect.bottom < -200 || rect.top > window.innerHeight + 200) continue;
@@ -91,6 +95,54 @@ function useParallax(root: RefObject<HTMLElement | null>) {
       el.classList.remove("is-parallax");
     };
   }, [root]);
+}
+
+/** true quando o elemento entra na tela (uma vez só). Sem IntersectionObserver, já começa visível. */
+function useInView(ref: RefObject<Element | null>): boolean {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const frame = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(frame);
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return visible;
+}
+
+const numberFormat = (decimals: number) =>
+  new Intl.NumberFormat("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+
+/** Número que conta de 0 até o valor final quando `run` vira true. */
+function CountUp({ to, decimals = 0, run }: { to: number; decimals?: number; run: boolean }) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!run) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frame = 0;
+    const start = performance.now();
+    const duration = reduce ? 0 : 1200;
+    const tick = (now: number) => {
+      const t = duration === 0 ? 1 : Math.min(1, (now - start) / duration);
+      setValue(to * (1 - Math.pow(1 - t, 3)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [run, to]);
+  return <>{numberFormat(decimals).format(value)}</>;
 }
 
 function PhoneMenu() {
@@ -159,6 +211,27 @@ function Ticket() {
   );
 }
 
+const BUSINESSES = ["Padarias", "Pizzarias", "Hamburguerias", "Cafeterias", "Açaiterias", "Marmitarias", "Docerias", "Pastelarias", "Lanchonetes", "Confeitarias"];
+
+/** Faixas com tipos de negócio que deslizam em sentidos opostos conforme a rolagem. */
+function Marquee() {
+  const row = [...BUSINESSES, ...BUSINESSES];
+  return (
+    <section className="lp-marquee" aria-label={`Feito para ${BUSINESSES.join(", ")}`}>
+      <div className="lp-marquee__row" aria-hidden="true" data-parallax-x="0.45">
+        {row.map((b, i) => (
+          <span key={i}>{b}</span>
+        ))}
+      </div>
+      <div className="lp-marquee__row lp-marquee__row--outline" aria-hidden="true" data-parallax-x="-0.45">
+        {[...row].reverse().map((b, i) => (
+          <span key={i}>{b}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /** Frase que vai "acendendo" palavra por palavra conforme a rolagem (CSS scroll-driven, com fallback estático). */
 function Statement() {
   return (
@@ -170,6 +243,14 @@ function Statement() {
           </span>
         ))}
       </p>
+      <div className="lp-float" aria-hidden="true">
+        <img className="lp-float__a" src={photo(PHOTOS.croissant, 360)} alt="" loading="lazy" data-parallax="0.35" />
+        <img className="lp-float__b" src={photo(PHOTOS.coffee, 300)} alt="" loading="lazy" data-parallax="-0.2" />
+        <img className="lp-float__c" src={photo(PHOTOS.donut, 260)} alt="" loading="lazy" data-parallax="0.45" />
+        <span className="lp-float__tag" data-parallax="0.12">
+          Pedido #129 · R$ 16,50
+        </span>
+      </div>
     </section>
   );
 }
@@ -298,6 +379,8 @@ function HowItWorks() {
 export function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   useParallax(rootRef);
+  const dashRef = useRef<HTMLElement>(null);
+  const dashVisible = useInView(dashRef);
 
   return (
     <div className="lp" ref={rootRef}>
@@ -366,6 +449,8 @@ export function LandingPage() {
           </div>
         </section>
 
+        <Marquee />
+
         <Statement />
 
         <HowItWorks />
@@ -391,8 +476,8 @@ export function LandingPage() {
                 <span>Aberto até 20h · entrega em 30 min</span>
               </div>
             </li>
-            {PRODUCTS.slice(0, 4).map((p) => (
-              <li key={p.name} className="lp-product">
+            {PRODUCTS.slice(0, 4).map((p, i) => (
+              <li key={p.name} className="lp-product" data-parallax={i % 2 === 0 ? "0.05" : "-0.05"}>
                 <img src={photo(p.img, 520)} alt={p.alt} loading="lazy" />
                 <div className="lp-product__body">
                   <h3>{p.name}</h3>
@@ -415,7 +500,12 @@ export function LandingPage() {
             </p>
           </div>
 
-          <figure className="lp-dash" aria-label="Exemplo do painel da Padaria Trigal">
+          <figure
+            ref={dashRef}
+            className={`lp-dash${dashVisible ? " is-visible" : ""}`}
+            aria-label="Exemplo do painel da Padaria Trigal"
+            data-parallax="-0.05"
+          >
             <figcaption className="lp-dash__head">
               <b>Padaria Trigal</b>
               <span>Hoje, até as 18h</span>
@@ -423,20 +513,24 @@ export function LandingPage() {
             <dl className="lp-dash__stats">
               <div>
                 <dt>Pedidos</dt>
-                <dd>69</dd>
+                <dd>
+                  <CountUp to={69} run={dashVisible} />
+                </dd>
                 <span className="lp-delta">+12% que ontem</span>
               </div>
               <div>
                 <dt>Ticket médio</dt>
                 <dd>
-                  <small>R$</small>31,40
+                  <small>R$</small>
+                  <CountUp to={31.4} decimals={2} run={dashVisible} />
                 </dd>
                 <span className="lp-delta">+R$ 2,10</span>
               </div>
               <div>
                 <dt>Faturamento</dt>
                 <dd>
-                  <small>R$</small>2.167
+                  <small>R$</small>
+                  <CountUp to={2167} run={dashVisible} />
                 </dd>
                 <span className="lp-delta lp-delta--muted">meta R$ 2.000</span>
               </div>
@@ -447,9 +541,9 @@ export function LandingPage() {
                 <span className="lp-dash__peak">Pico às 8h</span>
               </div>
               <div className="lp-bars" role="img" aria-label="Pedidos por hora: pico de 14 pedidos às 8h">
-                {HOURS.map((x) => (
+                {HOURS.map((x, i) => (
                   <div key={x.h} className={`lp-bars__col${x.v === PEAK ? " is-peak" : ""}`}>
-                    <span style={{ height: `${(x.v / PEAK) * 100}%` }} />
+                    <span style={{ height: `${(x.v / PEAK) * 100}%`, "--i": i } as CSSProperties} />
                     <small>{x.h}</small>
                   </div>
                 ))}
@@ -476,6 +570,15 @@ export function LandingPage() {
         </section>
 
         <section className="lp-cta" data-parallax-bg="0.25">
+          <div className="lp-cta__deco" aria-hidden="true">
+            <img src={photo(PHOTOS.sourdough, 420)} alt="" loading="lazy" data-parallax="0.08" />
+            <div className="lp-cta__ticket" data-parallax="-0.1">
+              <b>Pedido #130</b>
+              <span>1× Pão de fermentação natural</span>
+              <span>2× Café com leite</span>
+              <em>Total R$ 40,00</em>
+            </div>
+          </div>
           <h2>Sua loja no ar ainda hoje</h2>
           <p>Cadastre os produtos, coloque o link na bio e comece a receber pedidos.</p>
           <div className="lp-cta__actions">
