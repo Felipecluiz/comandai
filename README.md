@@ -1,6 +1,8 @@
 # Comandaí 🍕💬
 
-[![CI/CD](https://github.com/SEU-USUARIO/comandai/actions/workflows/ci.yml/badge.svg)](https://github.com/SEU-USUARIO/comandai/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/Felipecluiz/comandai/actions/workflows/ci.yml/badge.svg)](https://github.com/Felipecluiz/comandai/actions/workflows/ci.yml)
+
+🔗 **Site no ar:** [comandai.pages.dev](https://comandai.pages.dev) · **Cardápio de exemplo:** [Pizzaria do Zé](https://comandai.pages.dev/r/pizzaria-do-ze) · **Painel de demonstração:** `demo@comandai.dev` / `demo1234`
 
 **Cardápio digital multi-restaurante com pedidos pelo WhatsApp e painel da cozinha em tempo real** — rodando 100% na edge da Cloudflare.
 
