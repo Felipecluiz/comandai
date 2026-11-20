@@ -18,6 +18,8 @@ export default defineWorkersConfig(async () => {
             bindings: {
               TEST_MIGRATIONS: migrations,
               JWT_SECRET: "test-secret-with-at-least-32-characters!!",
+              // O fluxo ponta a ponta não fala com a Cloudflare; a verificação tem testes próprios.
+              TURNSTILE_DISABLED: "true",
             },
           },
         },

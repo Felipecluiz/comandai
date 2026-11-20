@@ -4,6 +4,7 @@ declare module "cloudflare:test" {
     IMAGES: KVNamespace;
     ORDERS_HUB: DurableObjectNamespace;
     JWT_SECRET: string;
+    TURNSTILE_DISABLED: string;
     TEST_MIGRATIONS: D1Migration[];
   }
 }

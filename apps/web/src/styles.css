@@ -330,3 +330,7 @@ textarea { resize: vertical; }
 .menu__avatar,
 .product-card__placeholder,
 .product-card__text strong { font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif; }
+
+/* ---------- Verificação anti-robô (Turnstile) ---------- */
+.human-check { display: grid; gap: 0.4rem; min-height: 65px; }
+.human-check__widget { width: 100%; }

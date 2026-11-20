@@ -112,6 +112,8 @@ cd apps/api && npx wrangler d1 execute comandai-db --remote --file=./seed/seed.s
 | Migrations **antes** da API | o código novo encontra o schema que espera |
 | `--var ALLOWED_ORIGIN:$WEB_URL` | CORS liberado só para o front publicado |
 | `wrangler secret put JWT_SECRET` | o segredo vem do GitHub, nunca do código |
+| `wrangler secret put TURNSTILE_SECRET_KEY` **antes** do deploy da API | a API nova recusa cadastro, login e pedidos sem o secret (ADR-0007) |
+| Bloqueio das chaves de teste do Turnstile | elas sempre passam; em produção deixariam qualquer robô entrar |
 | Smoke test (`/health` + home) | o job fica vermelho se o deploy subir quebrado |
 
 ### Regra para migrations (expand → contract)
@@ -126,6 +128,20 @@ Como as migrations rodam antes do código novo, o código **antigo** precisa con
 - **API**: `npx wrangler rollback` (volta para a versão anterior do Worker) ou pelo painel *Workers → Deployments*.
 - **Web**: painel do Pages → *Deployments* → *Rollback* no deploy anterior.
 - **D1**: Time Travel — `npx wrangler d1 time-travel restore comandai-db --timestamp=<ISO>`.
+
+### Turnstile (anti-robô em cadastro, login e pedido)
+
+1. Painel da Cloudflare → página **Turnstile** → **Add widget**.
+2. **Widget name:** `Comandaí` · **Region:** *Rest of World* (não dá para mudar depois) · **Hostnames:** `comandai.pages.dev` (e `localhost`, se quiser testar com as chaves reais).
+3. **Widget mode:** *Managed* → **Create**. Copie a **Site Key** e a **Secret Key**.
+4. GitHub → repositório → **Settings → Environments → production**:
+   - em **Environment variables**, crie `TURNSTILE_SITE_KEY` com a Site Key (ela é pública);
+   - em **Environment secrets**, crie `TURNSTILE_SECRET_KEY` com a Secret Key.
+
+   Pelo terminal: `gh variable set TURNSTILE_SITE_KEY --env production` e `gh secret set TURNSTILE_SECRET_KEY --env production`.
+5. Faça push (ou **Run workflow**). O CI envia o secret para o Worker antes do deploy e embute a Site Key no build do front.
+
+Em desenvolvimento não precisa de nada: o front usa a chave de teste da Cloudflare, e a API usa o `TURNSTILE_SECRET_KEY` de teste do `.dev.vars.example`.
 
 ### Proteção do endpoint público
 

@@ -29,6 +29,14 @@ export interface ImageStorage {
   delete(key: string): Promise<void>;
 }
 
+/**
+ * Confirma que quem chama é uma pessoa (ADR-0007). Usado em cadastro, login e envio de pedido.
+ * Implementações NÃO lançam: qualquer falha (token ausente, rede, configuração) vira `false`.
+ */
+export interface HumanVerifier {
+  verify(token: string, context: { action: string; remoteIp?: string }): Promise<boolean>;
+}
+
 export type OrderEvent = { type: "order.created" | "order.updated"; order: OrderSnapshot };
 
 /**

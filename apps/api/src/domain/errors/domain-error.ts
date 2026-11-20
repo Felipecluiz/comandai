@@ -11,7 +11,8 @@ export type DomainErrorCode =
   | "RESTAURANT_CLOSED"
   | "PRODUCT_UNAVAILABLE"
   | "MIN_ORDER_NOT_REACHED"
-  | "INVALID_STATUS_TRANSITION";
+  | "INVALID_STATUS_TRANSITION"
+  | "HUMAN_VERIFICATION_FAILED";
 
 export abstract class DomainError extends Error {
   abstract readonly code: DomainErrorCode;
@@ -110,5 +111,13 @@ export class InvalidStatusTransitionError extends DomainError {
   readonly code = "INVALID_STATUS_TRANSITION";
   constructor(from: string, to: string) {
     super(`Não é possível mudar o pedido de "${from}" para "${to}"`);
+  }
+}
+
+/** A verificação anti-robô (Turnstile, ADR-0007) não passou ou não foi enviada. */
+export class HumanVerificationFailedError extends DomainError {
+  readonly code = "HUMAN_VERIFICATION_FAILED";
+  constructor() {
+    super("Não conseguimos confirmar que você não é um robô. Refaça a verificação e tente de novo.");
   }
 }

@@ -20,7 +20,11 @@ interface RequestOptions {
   body?: unknown;
   query?: Query;
   auth?: boolean;
+  headers?: Record<string, string>;
 }
+
+/** Header com o token da verificação anti-robô (Turnstile, ADR-0007). */
+export const humanHeaders = (token: string) => ({ "x-turnstile-token": token });
 
 function buildUrl(path: string, query?: Query): string {
   const params = new URLSearchParams();
@@ -31,8 +35,8 @@ function buildUrl(path: string, query?: Query): string {
   return `${API_URL}/api${path}${qs ? `?${qs}` : ""}`;
 }
 
-function buildInit(method: string, { body, auth = false }: RequestOptions): RequestInit {
-  const headers = new Headers();
+function buildInit(method: string, { body, auth = false, headers: extra }: RequestOptions): RequestInit {
+  const headers = new Headers(extra);
   const isForm = body instanceof FormData;
   if (body !== undefined && !isForm) headers.set("content-type", "application/json");
 
@@ -64,7 +68,7 @@ async function request<T>(method: string, path: string, options: RequestOptions 
 /** Cliente público (cardápio, pedido) */
 export const publicApi = {
   get: <T>(path: string, query?: Query) => request<T>("GET", path, { query }),
-  post: <T>(path: string, body: unknown) => request<T>("POST", path, { body }),
+  post: <T>(path: string, body: unknown, headers?: Record<string, string>) => request<T>("POST", path, { body, headers }),
 };
 
 /** Cliente autenticado (painel) */
@@ -77,7 +81,8 @@ export const adminApi = {
 };
 
 export const authApi = {
-  post: <T>(path: string, body: unknown) => request<T>("POST", `/auth${path}`, { body }),
+  post: <T>(path: string, body: unknown, headers?: Record<string, string>) =>
+    request<T>("POST", `/auth${path}`, { body, headers }),
 };
 
 /** URL do WebSocket do painel, respeitando VITE_API_URL ou o proxy do Vite. */

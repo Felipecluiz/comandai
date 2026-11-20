@@ -1,2 +1,4 @@
 # Copie para .dev.vars (não versionado). Gere com: openssl rand -base64 48
 JWT_SECRET=troque-por-um-segredo-com-pelo-menos-32-caracteres
+# Chave secreta de TESTE do Turnstile (sempre passa). Em produção o CI usa a chave real.
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA

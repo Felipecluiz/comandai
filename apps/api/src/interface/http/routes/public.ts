@@ -2,6 +2,7 @@ import { placeOrderInputSchema, type PlaceOrderResultDto } from "@comandai/contr
 import { Hono } from "hono";
 import type { AppEnv } from "../container";
 import { toOrderDto, toPublicMenuDto } from "../presenters";
+import { requireHuman } from "../middlewares/require-human";
 import { validate } from "../validate";
 
 /** Rotas sem login: o cardápio do cliente final. */
@@ -11,7 +12,7 @@ export const publicRoutes = new Hono<AppEnv>()
     c.header("Cache-Control", "public, max-age=30"); // alivia o D1 em horário de pico
     return c.json(toPublicMenuDto(menu, new URL(c.req.url).origin));
   })
-  .post("/:slug/orders", validate("json", placeOrderInputSchema), async (c) => {
+  .post("/:slug/orders", validate("json", placeOrderInputSchema), requireHuman("order"), async (c) => {
     const { order, whatsappUrl } = await c.var.useCases.placeOrder.execute(c.req.param("slug"), c.req.valid("json"));
     return c.json({ order: toOrderDto(order), whatsappUrl } satisfies PlaceOrderResultDto, 201);
   });

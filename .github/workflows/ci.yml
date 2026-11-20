@@ -51,6 +51,7 @@ jobs:
       KV_NAMESPACE_ID: ${{ vars.KV_NAMESPACE_ID }}
       API_URL: ${{ vars.API_URL }}
       WEB_URL: ${{ vars.WEB_URL }}
+      TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -63,12 +64,17 @@ jobs:
       - name: Verificar configuração
         run: |
           missing=0
-          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID D1_DATABASE_ID KV_NAMESPACE_ID API_URL WEB_URL JWT_SECRET; do
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID D1_DATABASE_ID KV_NAMESPACE_ID API_URL WEB_URL JWT_SECRET TURNSTILE_SITE_KEY TURNSTILE_SECRET_KEY; do
             if [ -z "${!name}" ]; then echo "::error::Configure '$name' (veja docs/DEPLOY.md)"; missing=1; fi
           done
+          # As chaves de teste do Turnstile sempre passam: em produção deixariam qualquer bot entrar.
+          case "$TURNSTILE_SITE_KEY$TURNSTILE_SECRET_KEY" in
+            *x00000000000000000000*) echo "::error::Use as chaves REAIS do Turnstile em produção (veja docs/DEPLOY.md)"; missing=1 ;;
+          esac
           exit $missing
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
 
       - name: Injetar IDs do D1 e do KV no wrangler.toml
         working-directory: apps/api
@@ -81,6 +87,13 @@ jobs:
       - name: Aplicar migrations no D1
         working-directory: apps/api
         run: pnpm exec wrangler d1 migrations apply comandai-db --remote
+
+      # Antes do deploy: a API nova recusa cadastro, login e pedidos sem o secret (falha fechada, ADR-0007).
+      - name: Sincronizar TURNSTILE_SECRET_KEY
+        working-directory: apps/api
+        env:
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+        run: printf '%s' "$TURNSTILE_SECRET_KEY" | pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
 
       - name: Deploy da API (Workers + Durable Object)
         working-directory: apps/api
@@ -96,6 +109,7 @@ jobs:
         working-directory: apps/web
         env:
           VITE_API_URL: ${{ vars.API_URL }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: pnpm run build
 
       - name: Deploy do front (Pages)

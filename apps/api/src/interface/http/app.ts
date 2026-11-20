@@ -21,6 +21,7 @@ export function createApp(makeDependencies: DependencyFactory) {
       const deps = makeDependencies(c.env);
       c.set("useCases", buildUseCases(deps));
       c.set("tokens", deps.tokens);
+      c.set("human", deps.human);
       await next();
     })
     .get("/health", (c) => c.json({ status: "ok" }))

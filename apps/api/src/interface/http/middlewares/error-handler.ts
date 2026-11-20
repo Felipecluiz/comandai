@@ -19,6 +19,7 @@ const STATUS_BY_CODE: Record<DomainErrorCode, ContentfulStatusCode> = {
   EMAIL_TAKEN: 409,
   CATEGORY_NAME_TAKEN: 409,
   CATEGORY_NOT_EMPTY: 409,
+  HUMAN_VERIFICATION_FAILED: 403,
 };
 
 export function handleError(err: Error, c: Context): Response {

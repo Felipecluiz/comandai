@@ -1,5 +1,6 @@
 import type { Actor, Clock, IdGenerator } from "../src/application";
 import {
+  FakeHumanVerifier,
   FakePasswordHasher,
   FakeTokenService,
   InMemoryAccountRepository,
@@ -45,6 +46,7 @@ export function makeSut() {
     tokens: new FakeTokenService(),
     ids: new SequentialIds(),
     clock: new FixedClock(),
+    human: new FakeHumanVerifier(),
   };
   return { store, ...deps, useCases: buildUseCases(deps) };
 }

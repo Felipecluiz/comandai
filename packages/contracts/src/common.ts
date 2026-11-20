@@ -17,6 +17,7 @@ export const errorCodeSchema = z.enum([
   "PRODUCT_UNAVAILABLE",
   "MIN_ORDER_NOT_REACHED",
   "INVALID_STATUS_TRANSITION",
+  "HUMAN_VERIFICATION_FAILED",
   "INTERNAL_ERROR",
 ]);
 export type ErrorCode = z.infer<typeof errorCodeSchema>;

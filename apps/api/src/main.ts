@@ -1,5 +1,5 @@
 /**
- * Composition root: o ÚNICO arquivo que conhece D1, KV, Durable Objects e WebCrypto.
+ * Composition root: o ÚNICO arquivo que conhece D1, KV, Durable Objects, WebCrypto e Turnstile.
  */
 import { JwtTokenService } from "./infrastructure/crypto/jwt-token-service";
 import { Pbkdf2PasswordHasher } from "./infrastructure/crypto/pbkdf2-password-hasher";
@@ -9,6 +9,7 @@ import { D1DashboardQueries } from "./infrastructure/d1/d1-dashboard-queries";
 import { D1OrderRepository } from "./infrastructure/d1/d1-order-repository";
 import { DurableObjectOrderNotifier, type OrdersHub } from "./infrastructure/durable-objects/orders-hub";
 import { KvImageStorage } from "./infrastructure/kv/kv-image-storage";
+import { DisabledHumanVerifier, TurnstileVerifier } from "./infrastructure/turnstile/turnstile-verifier";
 import { CryptoIdGenerator, SystemClock } from "./infrastructure/system/system";
 import { createApp } from "./interface/http/app";
 import { toOrderDto } from "./interface/http/presenters";
@@ -38,6 +39,7 @@ const app = createApp((env) => ({
   hasher,
   ids,
   clock,
+  human: env.TURNSTILE_DISABLED === "true" ? new DisabledHumanVerifier() : new TurnstileVerifier(env.TURNSTILE_SECRET_KEY),
 }));
 
 export default app;

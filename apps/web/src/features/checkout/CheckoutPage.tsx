@@ -5,6 +5,7 @@ import { createPersistentStore, useStore } from "../../shared/lib/store";
 import { formatCents, maskPhone, parseBRLToCents } from "../../shared/lib/format";
 import { ErrorMessage, Field, Loading, fieldError, hasFieldErrors } from "../../shared/ui/feedback";
 import { useCart } from "../cart/cart";
+import { HumanCheck, useHumanCheck } from "../../shared/ui/HumanCheck";
 import { usePlaceOrder, usePublicMenu } from "../menu/api";
 import { lastOrderStore } from "./last-order";
 
@@ -31,6 +32,7 @@ export function CheckoutPage() {
   const { data: menu, isLoading } = usePublicMenu(slug);
   const cart = useCart(slug);
   const placeOrder = usePlaceOrder(slug);
+  const human = useHumanCheck("order");
 
   const saved = useStore(customerStore);
   const [customer, setCustomer] = useState(saved);
@@ -74,13 +76,19 @@ export function CheckoutPage() {
       items: cart.lines.map((l) => ({ productId: l.productId, quantity: l.quantity, notes: l.notes })),
     };
 
-    placeOrder.mutate(input, {
-      onSuccess: (result) => {
-        customerStore.set(customer);
-        lastOrderStore.set({ slug, ...result });
-        navigate(`/r/${slug}/pedido/${result.order.number}`, { replace: true });
+    if (!human.token) return;
+    placeOrder.mutate(
+      { input, humanToken: human.token },
+      {
+        // O token é de uso único: qualquer erro exige uma verificação nova antes de tentar de novo.
+        onError: human.reset,
+        onSuccess: (result) => {
+          customerStore.set(customer);
+          lastOrderStore.set({ slug, ...result });
+          navigate(`/r/${slug}/pedido/${result.order.number}`, { replace: true });
+        },
       },
-    });
+    );
   };
 
   return (
@@ -195,8 +203,9 @@ export function CheckoutPage() {
       {belowMinimum && <p className="notice">Pedido mínimo: {formatCents(restaurant.minOrderCents)}</p>}
       {placeOrder.error && !hasFieldErrors(placeOrder.error) && <ErrorMessage error={placeOrder.error} />}
 
-      <button className="btn btn--whatsapp btn--block" disabled={placeOrder.isPending || belowMinimum}>
-        {placeOrder.isPending ? "Enviando…" : `Fazer pedido · ${formatCents(total)}`}
+      <HumanCheck state={human} />
+      <button className="btn btn--whatsapp btn--block" disabled={placeOrder.isPending || belowMinimum || !human.token}>
+        {placeOrder.isPending ? "Enviando…" : human.token ? `Fazer pedido · ${formatCents(total)}` : "Verificando…"}
       </button>
     </form>
   );

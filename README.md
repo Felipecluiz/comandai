@@ -61,7 +61,7 @@ it("AC-003.2 ignora preço enviado pelo cliente", ...)
 it("AC-004.2 retirada não sai para entrega", ...)
 ```
 
-Decisões técnicas em [`docs/adr/`](./docs/adr): ports para recursos Cloudflare, multi-tenant por coluna, `wa.me` vs Cloud API, Durable Objects, snapshot de preço.
+Decisões técnicas em [`docs/adr/`](./docs/adr): ports para recursos Cloudflare, multi-tenant por coluna, `wa.me` vs Cloud API, Durable Objects, snapshot de preço, fotos no KV e anti-robô com Turnstile.
 
 ---
 
@@ -125,6 +125,7 @@ sequenceDiagram
 - **Tempo real barato** — Hibernation API: o Durable Object dorme entre pedidos.
 - **Storage trocável** — as fotos saíram do R2 para o KV (sem cartão de crédito) trocando só um adapter; domínio e casos de uso intactos (ADR-0006).
 - **Notificação nunca derruba pedido** — falha no broadcast é logada; o painel ressincroniza ao reconectar.
+- **Anti-robô sem atrito** — cadastro, login e pedido passam pelo Cloudflare Turnstile, validado no servidor e com falha fechada (ADR-0007).
 
 ---
 

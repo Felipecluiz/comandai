@@ -4,6 +4,7 @@ import type {
   DashboardQueries,
   DashboardTotals,
   DateRange,
+  HumanVerifier,
   ImageStorage,
   OrderEvent,
   OrderNotifier,
@@ -232,5 +233,15 @@ export class RecordingOrderNotifier implements OrderNotifier {
   readonly events: Array<{ restaurantId: string; event: OrderEvent }> = [];
   async publish(restaurantId: string, event: OrderEvent) {
     this.events.push({ restaurantId, event });
+  }
+}
+
+/** Verificação anti-robô controlável nos testes: aceita só o token configurado e registra as chamadas. */
+export class FakeHumanVerifier implements HumanVerifier {
+  readonly calls: Array<{ token: string; action: string }> = [];
+  constructor(private readonly validToken = "human-ok") {}
+  async verify(token: string, context: { action: string }) {
+    this.calls.push({ token, action: context.action });
+    return token === this.validToken;
   }
 }

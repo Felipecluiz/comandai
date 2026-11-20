@@ -12,6 +12,7 @@ import {
   type Actor,
   type Clock,
   type DashboardQueries,
+  type HumanVerifier,
   type IdGenerator,
   type ImageStorage,
   type OrderNotifier,
@@ -37,6 +38,7 @@ export interface Dependencies {
   tokens: TokenService;
   ids: IdGenerator;
   clock: Clock;
+  human: HumanVerifier;
 }
 
 export function buildUseCases(d: Dependencies) {
@@ -62,9 +64,13 @@ export interface Bindings {
   ORDERS_HUB: DurableObjectNamespace;
   JWT_SECRET: string;
   ALLOWED_ORIGIN?: string;
+  /** Secret do widget Turnstile (ADR-0007). `wrangler secret put TURNSTILE_SECRET_KEY` */
+  TURNSTILE_SECRET_KEY?: string;
+  /** "true" desliga a verificação anti-robô. Só para testes e dev local. */
+  TURNSTILE_DISABLED?: string;
 }
 
 export interface AppEnv {
   Bindings: Bindings;
-  Variables: { useCases: UseCases; tokens: TokenService; actor: Actor };
+  Variables: { useCases: UseCases; tokens: TokenService; actor: Actor; human: HumanVerifier };
 }
